@@ -135,6 +135,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.IO
                         $"Recovering interval did not meet the expected interval (expected '{expectedInterval}', rounded '{roundedInterval.TotalSeconds}', actual '{actualInterval.TotalSeconds}')");
                 }
 
+                var test = loggerProvider.GetAllLogMessages();
                 Assert.True(loggerProvider.GetAllLogMessages().All(t => t.FormattedMessage.EndsWith(fileWatcherLogSuffix)));
 
                 if (isFailureScenario)
