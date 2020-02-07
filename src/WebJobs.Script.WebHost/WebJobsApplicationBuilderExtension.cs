@@ -25,10 +25,10 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
             IEnvironment environment = builder.ApplicationServices.GetService<IEnvironment>() ?? SystemEnvironment.Instance;
             IOptionsMonitor<StandbyOptions> standbyOptions = builder.ApplicationServices.GetService<IOptionsMonitor<StandbyOptions>>();
             IOptionsMonitor<HttpBodyControlOptions> httpBodyControlOptions = builder.ApplicationServices.GetService<IOptionsMonitor<HttpBodyControlOptions>>();
+            IOptionsMonitor<HttpOptions> httpOptions = builder.ApplicationServices.GetService<IOptionsMonitor<HttpOptions>>();
 
             builder.UseMiddleware<SystemTraceMiddleware>();
             builder.UseMiddleware<HostnameFixupMiddleware>();
-            builder.UseMiddleware<EnvironmentReadyCheckMiddleware>();
 
             if (standbyOptions.CurrentValue.InStandbyMode)
             {
@@ -48,7 +48,10 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
                 config.UseMiddleware<HostAvailabilityCheckMiddleware>();
             });
 
-            builder.UseMiddleware<HostWarmupMiddleware>();
+            if (HostWarmupMiddleware.ShouldRegister(environment))
+            {
+                builder.UseMiddleware<HostWarmupMiddleware>();
+            }
 
             // This middleware must be registered before any other middleware depending on
             // JobHost/ScriptHost scoped services.
@@ -56,16 +59,24 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost
 
             if (environment.IsLinuxConsumption())
             {
+                builder.UseMiddleware<EnvironmentReadyCheckMiddleware>();
                 builder.UseMiddleware<AppServiceHeaderFixupMiddleware>();
             }
 
             builder.UseMiddleware<ExceptionMiddleware>();
-            builder.UseMiddleware<HomepageMiddleware>();
-            builder.UseWhen(context => !context.Request.IsAdminRequest(), config =>
+            builder.UseWhen(HomepageMiddleware.IsHomepageRequest, config =>
+            {
+                config.UseMiddleware<HomepageMiddleware>();
+            });
+            builder.UseWhen(context => HttpThrottleMiddleware.ShouldEnable(httpOptions.CurrentValue) && !context.Request.IsAdminRequest(), config =>
             {
                 config.UseMiddleware<HttpThrottleMiddleware>();
             });
-            builder.UseMiddleware<ResponseContextItemsCheckMiddleware>();
+            if (environment.IsOutOfProc())
+            {
+                // some middleware is only needed for OOP
+                builder.UseMiddleware<ResponseContextItemsCheckMiddleware>();
+            }
             builder.UseMiddleware<JobHostPipelineMiddleware>();
             builder.UseMiddleware<FunctionInvocationMiddleware>();
 

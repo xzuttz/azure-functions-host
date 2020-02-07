@@ -8,6 +8,8 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.Azure.WebJobs.Script.Description;
 using Microsoft.Azure.WebJobs.Script.Eventing;
 using Microsoft.Azure.WebJobs.Script.ManagedDependencies;
+using Microsoft.Azure.WebJobs.Script.Scale;
+using Microsoft.Azure.WebJobs.Script.Workers;
 using Microsoft.Azure.WebJobs.Script.Workers.Rpc;
 using Microsoft.Extensions.Logging;
 
@@ -106,6 +108,19 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Workers.Rpc
         {
             await Task.WhenAll(ExecutionContexts);
             ExecutionContexts.Clear();
+        }
+
+        public Task<WorkerStatus> GetWorkerStatusAsync()
+        {
+            var status = new WorkerStatus
+            {
+                Latency = TimeSpan.FromMilliseconds(10),
+                ProcessStats = new ProcessStats
+                {
+                    CpuLoadHistory = new List<double>()
+                }
+            };
+            return Task.FromResult(status);
         }
     }
 }

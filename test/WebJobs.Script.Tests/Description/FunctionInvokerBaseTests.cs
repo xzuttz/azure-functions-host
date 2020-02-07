@@ -217,7 +217,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
 
         private class MockInvoker : FunctionInvokerBase
         {
-            private readonly FunctionInstanceLogger _fastLogger;
+            private readonly FunctionInstanceLogger _instanceLogger;
 
             public MockInvoker(ScriptHost host, IMetricsLogger metrics, FunctionMetadata metadata, ILoggerFactory loggerFactory)
                 : base(host, metadata, loggerFactory)
@@ -226,19 +226,20 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
                 metadataManagerMock.Setup(m => m.Functions)
                     .Returns(new[] { metadata }.ToImmutableArray());
                 var proxyMetadataManagerMock = new Mock<IProxyMetadataManager>();
-                _fastLogger = new FunctionInstanceLogger(metadataManagerMock.Object, proxyMetadataManagerMock.Object, metrics);
+                _instanceLogger = new FunctionInstanceLogger(metadataManagerMock.Object, proxyMetadataManagerMock.Object, metrics);
             }
 
             protected override async Task<object> InvokeCore(object[] parameters, FunctionInvocationContext context)
             {
-                FunctionInstanceLogEntry item = new FunctionInstanceLogEntry
+                var item = new FunctionInstanceLogEntry
                 {
                     FunctionInstanceId = context.ExecutionContext.InvocationId,
                     StartTime = DateTime.UtcNow,
                     FunctionName = Metadata.Name,
+                    LogName = Utility.GetFunctionShortName(Metadata.Name),
                     Properties = new Dictionary<string, object>()
                 };
-                await _fastLogger.AddAsync(item);
+                await _instanceLogger.AddAsync(item);
 
                 InvocationData invocation = parameters.OfType<InvocationData>().FirstOrDefault() ?? new InvocationData();
 
@@ -258,7 +259,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
                 {
                     item.EndTime = DateTime.UtcNow;
                     item.ErrorDetails = error;
-                    await _fastLogger.AddAsync(item);
+                    await _instanceLogger.AddAsync(item);
                 }
             }
         }

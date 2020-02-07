@@ -1171,7 +1171,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 Route = "products/{category}/{id?}"
             };
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
 
             ScriptHost.ValidateFunction(function.Object, httpFunctions);
             Assert.Equal(1, httpFunctions.Count);
@@ -1183,7 +1183,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 Route = "/foo/bar/baz/"
             };
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
             ScriptHost.ValidateFunction(function.Object, httpFunctions);
             Assert.Equal(2, httpFunctions.Count);
             Assert.True(httpFunctions.ContainsKey("test2"));
@@ -1194,7 +1194,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 Route = "/foo/bar/baz/"
             };
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
             ScriptHost.ValidateFunction(function.Object, httpFunctions);
             Assert.Equal(3, httpFunctions.Count);
             Assert.True(httpFunctions.ContainsKey("test3"));
@@ -1206,7 +1206,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 Route = "/foo/bar/baz/"
             };
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
                 ScriptHost.ValidateFunction(function.Object, httpFunctions);
@@ -1220,7 +1220,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 Route = "admin/foo/bar"
             };
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
             ex = Assert.Throws<InvalidOperationException>(() =>
             {
                 ScriptHost.ValidateFunction(function.Object, httpFunctions);
@@ -1233,7 +1233,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 Route = "runtime/foo/bar"
             };
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
             ex = Assert.Throws<InvalidOperationException>(() =>
             {
                 ScriptHost.ValidateFunction(function.Object, httpFunctions);
@@ -1243,7 +1243,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             // verify that empty route is defaulted to function name
             function = new Mock<FunctionDescriptor>(MockBehavior.Strict, "test7", null, metadata, null, null, null, null);
             attribute = new HttpTriggerAttribute();
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
             ScriptHost.ValidateFunction(function.Object, httpFunctions);
             Assert.Equal(4, httpFunctions.Count);
             Assert.True(httpFunctions.ContainsKey("test7"));
@@ -1320,7 +1320,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             var metadata = new FunctionMetadata();
             var function = new Mock<FunctionDescriptor>(MockBehavior.Strict, name, null, metadata, null, null, null, null);
             var attribute = new HttpTriggerAttribute(AuthorizationLevel.Function, "get");
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
 
             ScriptHost.ValidateFunction(function.Object, httpFunctions);
 
@@ -1334,7 +1334,7 @@ namespace Microsoft.Azure.WebJobs.Script.Tests
             {
                 Route = "proxyRoute"
             };
-            function.Setup(p => p.GetTriggerAttributeOrNull<HttpTriggerAttribute>()).Returns(() => attribute);
+            function.SetupGet(p => p.HttpTriggerAttribute).Returns(() => attribute);
 
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
