@@ -92,12 +92,17 @@ namespace Microsoft.Azure.WebJobs.Script.Tests.Managment
         [Fact]
         public async Task ReadFunctionsMetadataSucceeds()
         {
-            IEnumerable<FunctionMetadataResponse> metadata = await _webFunctionsManager.GetFunctionsMetadata(includeProxies: false);
-            var jsFunctions = metadata.Where(funcMetadata => funcMetadata.Language == RpcWorkerConstants.NodeLanguageWorkerName).ToList();
-            var unknownFunctions = metadata.Where(funcMetadata => string.IsNullOrEmpty(funcMetadata.Language)).ToList();
+            var metadata = (await _webFunctionsManager.GetFunctionsMetadata(includeProxies: false)).ToArray();
 
-            Assert.Equal(2, jsFunctions.Count());
-            Assert.Equal(1, unknownFunctions.Count());
+            Assert.Equal(2, metadata.Count(p => p.Language == RpcWorkerConstants.NodeLanguageWorkerName));
+            Assert.Equal(1, metadata.Count(p => string.IsNullOrEmpty(p.Language)));
+
+            // TestData should not be returned inline - only the
+            // href should be populated
+            Assert.All(metadata, p => Assert.Null(p.TestData));
+            Assert.Equal("https://test.azurewebsites.net/admin/vfs/function1.dat", metadata[0].TestDataHref.AbsoluteUri);
+            Assert.Equal("https://test.azurewebsites.net/admin/vfs/function2.dat", metadata[1].TestDataHref.AbsoluteUri);
+            Assert.Equal("https://test.azurewebsites.net/admin/vfs/function3.dat", metadata[2].TestDataHref.AbsoluteUri);
         }
 
         [Fact]

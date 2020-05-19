@@ -49,7 +49,6 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Extensions
             {
                 var testDataFilePath = functionMetadata.GetTestDataFilePath(hostOptions);
                 response.TestDataHref = VirtualFileSystem.FilePathToVfsUri(testDataFilePath, baseUrl, hostOptions);
-                response.TestData = await GetTestData(testDataFilePath, hostOptions);
             }
 
             if (!string.IsNullOrEmpty(functionMetadata.ScriptFile))
@@ -152,17 +151,6 @@ namespace Microsoft.Azure.WebJobs.Script.WebHost.Extensions
             // This is current kudu behavior.
             // TODO: add an error field that can be used to communicate the JSON parse error.
             return new JObject();
-        }
-
-        private static async Task<string> GetTestData(string testDataPath, ScriptJobHostOptions config)
-        {
-            if (!File.Exists(testDataPath))
-            {
-                FileUtility.EnsureDirectoryExists(Path.GetDirectoryName(testDataPath));
-                await FileUtility.WriteAsync(testDataPath, string.Empty);
-            }
-
-            return await FileUtility.ReadAsync(testDataPath);
         }
 
         private static Uri GetFunctionHref(string functionName, string baseUrl) =>
